@@ -1,23 +1,23 @@
 # 🏦 AI Powered Financial Document Analysis
-### Can an open-source 8B model analyze financial 10K Report?
+### Can an open source 8B model analyze financial 10K Report?
 
-**Dataset:** FinanceBench — 150 questions across 32 companies (53 Numerical | 37 Yes/No | 60 Descriptive)  
-**Focus:** Numerical accuracy on 10-K financial reports  
-**Benchmark:** GPT-4-Turbo + Basic RAG = 19% overall (FinanceBench paper)
+**Dataset:** FinanceBench : 150 questions across 32 companies (53 Numerical | 37 Yes/No | 60 Descriptive)  
+**Focus:** Numerical accuracy on 10K financial reports  
+**Benchmark:** GPT4 Turbo + Basic RAG = 19% overall (FinanceBench paper)
 
 ---
 
-## 📈 Numerical Accuracy — Progress Across Versions
+## 📈 Numerical Accuracy : Progress Across Versions
 
 | Version | Approach | Numerical Accuracy |
 |---------|----------|--------------------|
 | V1 | Basic RAG (FAISS only) | 17.0% (9/53) |
 | V2 | Metadata + BM25 + Statement Routing | 32.1% (17/53) |
 | V3 | Agentic RAG (ReAct + Calculator) | **41.5% (22/53)** |
-| 📄 GPT-4-Turbo (paper baseline) | Basic RAG | 19.0% overall |
+| 📄 GPT 4 Turbo (paper baseline) | Basic RAG | 19.0% overall |
 
-> **V3 open-source 8B model achieves 41.5% numerical accuracy —
-> more than double the GPT-4-Turbo baseline, at zero API cost.**
+> **V3 open source 8B model achieves 41.5% numerical accuracy 
+> more than double the GPT 4 Turbo baseline, at zero API cost.**
 
 ---
 
@@ -46,7 +46,7 @@ financial-document-analysis/
 ## V1 — Basic RAG (FAISS only)
 
 **Question:** Does RAG help on numerical financial questions?  
-**Answer:** Yes — but wrong document retrieval kills accuracy.
+**Answer:** Yes but wrong document retrieval kills accuracy.
 
 ![V1 Basic RAG Pipeline](./system_design/basic_rag.png)
 
@@ -67,7 +67,7 @@ FAISS retrieves:
   [3] 3M_2018_10K Cash Flow  ← correct, but ranked last
 ```
 
-Cosine similarity can't distinguish 3M's 2018 from 2022 filing —
+Cosine similarity can't distinguish 3M's 2018 from 2022 filing,
 the text is nearly identical. Same table structure, same headings.
 Only the numbers and year differ. The model confidently extracts
 a number from the wrong document.
@@ -79,7 +79,7 @@ a number from the wrong document.
 ## V2 — Metadata + BM25 + Statement Routing
 
 **Question:** Can smarter retrieval fix wrong document ranking?  
-**Answer:** Yes — retrieval IS the bottleneck, not model size.
+**Answer:** Yes, retrieval is the bottleneck.
 
 ![V2 Smart Retrieval Pipeline](./system_design/advance_rag.png)
 
@@ -95,7 +95,7 @@ a number from the wrong document.
 
 **Fix 1 — Metadata Hard Filter**  
 Extract company name and fiscal year from the question using regex,
-then hard-filter the vector store before searching.
+then hard filter the vector store before searching.
 Now a question about 3M 2018 only sees 3M 2018 documents.
 It can't be confused by 3M 2022.
 
@@ -128,8 +128,8 @@ Same model. Same prompts. Only retrieval changed.
 
 ### Key Insight from FinanceBench Paper
 
-GPT-4-Turbo jumps from 19% → 85% when given the exact correct evidence page.  
-That **66-point gap** proves the bottleneck is retrieval quality — not model size.  
+GPT 4 Turbo jumps from 19% → 85% when given the exact correct evidence page.  
+That **66-point gap** proves the bottleneck is retrieval quality.  
 Our experiments confirm this exactly: every retrieval improvement
 directly increased accuracy with no model changes.
 
@@ -139,11 +139,11 @@ After manual inspection of the 36 wrong answers:
 
 | Failure Type | Example |
 |-------------|---------|
-| Math hallucination | Fixed asset turnover pred: 1.97 vs gold: 24.26 |
-| Wrong year for multi-year comparisons | Revenue change pred: 5.1% vs gold: 30.8% |
-| Wrong number extracted from right doc | Adobe pred: 0.73 vs gold: 0.66 |
+| Math hallucination | Fixed asset turnover pred: 1.97 vs gold answer: 24.26 |
+| Wrong year for multi year comparisons | Revenue change pred: 5.1% vs gold answer: 30.8% |
+| Wrong number extracted from right doc | Adobe pred: 0.73 vs gold answer: 0.66 |
 
-The model never actually did math — it pattern-matched.  
+The model never actually did math, it pattern matched.  
 For ratio questions, it grabbed a random number from the text.
 
 📁 [v2_metadata_bm25_routing/](./v2_metadata_bm25_routing/)
@@ -153,7 +153,7 @@ For ratio questions, it grabbed a random number from the text.
 ## V3 — Agentic RAG (ReAct + Tools)
 
 **Question:** What can an agent fix that better retrieval can't?  
-**Answer:** Math and multi-year comparisons.
+**Answer:** Math and multi year comparisons.
 
 > 🚧 Architecture diagram coming soon
 
@@ -161,14 +161,14 @@ For ratio questions, it grabbed a random number from the text.
 
 | Failure | Root Cause | Agentic Fix |
 |---------|-----------|-------------|
-| Math hallucination | 8B model pattern-matches, doesn't compute | Python Calculator Tool |
-| Wrong year for comparisons | Single retrieval misses historical data | Multi-Hop Retrieval |
+| Math hallucination | 8B model pattern matches, doesn't compute | Python Calculator Tool |
+| Wrong year for comparisons | Single retrieval misses historical data | Multi Hop Retrieval |
 | Unverified answers | No grounding check after generation | Retry with alternate statement type |
 
 ### How the Agent Reasons (ReAct Loop)
 
 ```
-# Ratio Question — Fixed Asset Turnover
+# Ratio Question : Fixed Asset Turnover
 Step 1: Retrieve income statement → revenue = $6,489M
 Step 2: Retrieve balance sheet   → net PP&E = $267M
 Step 3: Write formula            → 6489 / 267
@@ -178,7 +178,7 @@ LLM handles reasoning. Python handles arithmetic.
 ```
 
 ```
-# Multi-Year Question — Amazon Revenue Growth
+# Multi-Year Question : Amazon Revenue Growth
 Step 1: Retrieve FY2016 → $135,987M
 Step 2: Retrieve FY2017 → $177,866M
 Step 3: Calculator      → (177,866 - 135,987) / 135,987 = 30.8% ✅
@@ -187,7 +187,7 @@ Agent fires separate retrieval calls per year, then aggregates.
 ```
 
 ```
-# Direct Lookup — 3M FY2018 CAPEX
+# Direct Lookup : 3M FY2018 CAPEX
 Step 1: Retrieve Cash Flow Statement
 Step 2: Extract capital expenditure = $1,577M
 Step 3: No calculation needed
@@ -221,20 +221,20 @@ now backed by a cited source (100% citation rate).
 
 ## 🔬 Research Findings
 
-1. **Retrieval is the bottleneck** — not model size. Every accuracy
+1. **Retrieval is the bottleneck** Every accuracy
    gain came from better retrieval, confirmed by the FinanceBench
    paper's 19% → 85% oracle gap.
 
-2. **Statement routing is underrated** — a simple keyword-to-statement
+2. **Statement routing is underrated** — a simple keyword to statement
    map nearly doubled numerical accuracy (17% → 32.1%) with no
    model changes.
 
-3. **Agents fix what retrieval can't** — for math-heavy ratio questions,
+3. **Agents fix what retrieval can't** — for math heavy ratio questions,
    offloading arithmetic to a Python calculator is more reliable than
    trusting an 8B LLM to compute.
 
 4. **Open-source is viable** — Llama 3.1 8B at 41.5% numerical
-   accuracy outperforms GPT-4-Turbo's 19% baseline at zero API cost.
+   accuracy outperforms GPT 4 Turbo's 19% baseline at zero API cost.
 
 ---
 
@@ -247,7 +247,6 @@ now backed by a cited source (100% citation rate).
 | Keyword Search | BM25 (rank-bm25) |
 | Embeddings | SentenceTransformers (all-MiniLM-L6-v2) |
 | Agent Framework | Custom ReAct loop |
-| Fine-tuning | QLoRA (HuggingFace PEFT) |
 | Dataset | FinanceBench (150 questions, 32 companies) |
 | Language | Python |
 
