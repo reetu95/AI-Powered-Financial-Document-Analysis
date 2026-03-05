@@ -214,10 +214,6 @@ now backed by a cited source (100% citation rate).
 | Metric | V1 Basic RAG | V2 Smart Retrieval | V3 Agentic RAG |
 |--------|-------------|-------------------|----------------|
 | Numerical Accuracy | 17.0% | 32.1% | **41.5%** |
-| Hallucination Rate | 22.6% | — | 45.3% |
-| Citation Rate | 55% | — | **100%** |
-| Calculator Used | — | — | 19/53 |
-| Answers Verified | — | — | 31/53 |
 
 📁 [v3_agentic_rag/](./v3_agentic_rag/)
 
