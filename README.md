@@ -1,5 +1,5 @@
 # 🏦 AI Powered Financial Document Analysis
-### Can an open-source 8B model match GPT-4 on financial QA?
+### Can an open-source 8B model analyze financial 10K Report?
 
 **Dataset:** FinanceBench — 150 questions across 32 companies (53 Numerical | 37 Yes/No | 60 Descriptive)  
 **Focus:** Numerical accuracy on 10-K financial reports  
